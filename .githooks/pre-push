@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Safety net for participants: blocks force-pushes (non-fast-forward) from your machine.
+# Enable once with:  git config core.hooksPath .githooks
+zero=0000000000000000000000000000000000000000
+while read -r lref lsha rref rsha; do
+  [ "$lsha" = "$zero" ] && { echo "Blocked: deleting remote branches is not allowed."; exit 1; }
+  if [ "$rsha" != "$zero" ] && ! git merge-base --is-ancestor "$rsha" "$lsha" 2>/dev/null; then
+    echo "Blocked: this push would rewrite history (force-push). Rebase locally, don't force."; exit 1
+  fi
+done
+exit 0
